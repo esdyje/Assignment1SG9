@@ -83,7 +83,11 @@ Tip: There is a package called stringr, which will be very handy for you also in
 
 ```{r}
 library(stringr)
-dat1$visit, str_extract("\\dat1"")
+dat1$visit, str_extract("\\dat1")
+dat2$visit, str_extract 
+
+
+
 ```
 
 2c. We also need to make a small adjustment to the content of the Child.ID coloumn in the demographic data. Within this column, names that are not abbreviations do not end with "." (i.e. Adam), which is the case in the other two data sets (i.e. Adam.). If The content of the two variables isn't identical the data sets will not be merged sufficiently.
