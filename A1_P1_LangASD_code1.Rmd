@@ -67,7 +67,7 @@ Tip: Look into the package data.table, or google "how to rename variables in R"
 
 ```{r}
 #renaming ID-columns
-names(dat1)[names(dat1)=="two"] <- "ID"
+names(dat1)[names(dat1)=="Child.ID"] <- "ID"
 names(dat2)[names(dat2)=="SUBJ"] <- "ID"
 names(dat3)[names(dat3)=="SUBJ"] <- "ID"
 
@@ -82,11 +82,10 @@ names(dat3)[names(dat3)=="VISIT"] <- "visit"
 Tip: There is a package called stringr, which will be very handy for you also in future assignments. We will return to this package later, but for now use the str_extract () to extract only the number from the variable Visit in each data set. Tip: type ?str_extract() after loading the library, for examples of how to use it.
 
 ```{r}
+#removing everything else than digits from the column "visit".
 library(stringr)
-dat1$visit, str_extract("\\dat1")
-dat2$visit, str_extract 
-
-
+dat2$visit = str_extract(dat2$visit, "\\d")
+dat3$visit = str_extract(dat3$visit, "\\d")
 
 ```
 
@@ -99,10 +98,11 @@ Tip: A possible solution has one line of code for each child name that is to be 
 
 Tip: You will have to do identical work for both data sets, so to save time on the copy/paste use the cmd+f/ctrl+f function. Add the data frame name (e.g. LU_data) in the first box, and the data frame name (e.g. Tokens_data) you wish to change it to in the other box, and press replace. 
 
-
-
 ```{r}
-
+#removing all "." from all ID columns on all datasets
+dat1$ID=gsub("\\.","",dat1$ID)
+dat2$ID=gsub("\\.","",dat2$ID)
+dat3$ID=gsub("\\.","",dat3$ID)
 ```
 
 2d. Now that the nitty gritty details of the different data sets are fixed, we want to make a subset of each data set only containig the variables that we wish to use in the final data set.
