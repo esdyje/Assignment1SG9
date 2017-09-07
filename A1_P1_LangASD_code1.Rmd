@@ -70,14 +70,20 @@ Tip: Look into the package data.table, or google "how to rename variables in R"
 names(dat1)[names(dat1)=="two"] <- "ID"
 names(dat2)[names(dat2)=="SUBJ"] <- "ID"
 names(dat3)[names(dat3)=="SUBJ"] <- "ID"
+
+#renaming Visit-columns
+names(dat1)[names(dat1)=="Visit"] <- "visit"
+names(dat2)[names(dat2)=="VISIT"] <- "visit"
+names(dat3)[names(dat3)=="VISIT"] <- "visit"
+
 ```
 
 2b. Find a way to homogeneize the way "visit" is reported. If you look into the original data sets, you will see that in the LU data and the Token data, Visits are called "visit 1" in stead of just 1 (which is the case in the demographic data set).
 Tip: There is a package called stringr, which will be very handy for you also in future assignments. We will return to this package later, but for now use the str_extract () to extract only the number from the variable Visit in each data set. Tip: type ?str_extract() after loading the library, for examples of how to use it.
 
 ```{r}
-
-
+library(stringr)
+dat1$visit, str_extract("\\dat1"")
 ```
 
 2c. We also need to make a small adjustment to the content of the Child.ID coloumn in the demographic data. Within this column, names that are not abbreviations do not end with "." (i.e. Adam), which is the case in the other two data sets (i.e. Adam.). If The content of the two variables isn't identical the data sets will not be merged sufficiently.
