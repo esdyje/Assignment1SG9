@@ -120,7 +120,15 @@ The variables we need are: Child.ID, Visit, Ethnicity, Diagnosis, Gender, Age, A
 It would be smart to rename the MullenRaw and ExpressiveLangRaw into something you can remember (i.e. nonVerbalIQ, verbalIQ)
 
 ```{r}
+library(tidyverse)
+#To subset interesting variables
+dat1=select(dat1, ID, visit, Ethnicity, Gender, Age, Diagnosis, ADOS, MullenRaw, ExpressiveLangRaw)
+dat2=select(dat2, ID, visit, MOT_MLU, MOT_LUstd, CHI_MLU, CHI_LUstd)
+dat3=select(dat3, ID, visit, types_MOT, types_CHI, tokens_MOT, tokens_CHI)
 
+#To rename variables
+dat1=plyr::rename(dat1, c("MullenRaw" = "nonVerbalIQ"))
+dat1=plyr::rename(dat1, c("ExpressiveLangRaw" = "verbalIQ"))
 
 ```
 
@@ -131,7 +139,11 @@ Tip: Merge only works for two data frames at the time.
 Tip: Check the number of observations in the datasets before and after merging. What is going on?
 
 ```{r}
+# To merge data
+Dat1=merge(dat1, dat2)
+DATA=merge(Dat1, dat3)
 
+# The reason for less datapoints is because the number of observation for demographic data is greater than the two other dataframes. Therefore the extra datapoints cannot merge.
 ```
 
 Are we done yet?
@@ -145,7 +157,17 @@ Tip: the final dataset should have as many rows as the the old one.
 
 
 ```{r}
+# To only get data for visit 1
+Visit1_data=subset(DATA, DATA$visit == 1)
 
+#To only select relevant columns
+ID_visit=select(Visit1_data, ID, ADOS, nonVerbalIQ, verbalIQ)
+
+#To omit irrelevant NA columns from dataset 
+DATA=DATA[,-7:-9]
+
+#To merge datasets back together
+DATA = merge(DATA, ID_visit, by = "ID")
 ```
 
 Now, we are almost ready to actually start working with the data. However, here are some additional finishing touches:
@@ -159,7 +181,18 @@ Tip: as.numeric() might be a useful function, but not alone.
 Tip: Google "how to rename levels in R".
 
 ```{r}
+# Visits is already numeric 
 
+# To make ID anonymous
+DATA$ID=as.factor(DATA$ID)
+DATA$ID=as.numeric(DATA$ID)
+
+# To change the gender variable
+DATA$Gender=as.factor(DATA$Gender)
+DATA$Gender=revalue(DATA$Gender, c("1"="M", "2"="F"))
+
+# To change diagnosis variable
+DATA$Diagnosis=revalue(DATA$Diagnosis, c("A"="ASD", "B"="TD"))
 
 ```
 
@@ -167,7 +200,7 @@ Tip: Google "how to rename levels in R".
 Save the data set using into a csv file. Hint: look into write.csv()
 
 ```{r}
-
+write.csv(DATA2, "clean_data.csv")
 ```
 
 
@@ -183,10 +216,16 @@ List all kids who:
 3. have not completed all trials. Tip: Use pipes to solve this
 
 ```{r}
+# Loading data
+clean_data=read.csv("clean_data.csv")
+clean_data=clean_data[,-1]
 
+# Mean length of untterances of more than 2.7 morphemes
+filter(clean_data, CHI_MLU > 2.7)
 
+# Less than 1.5 morphemes on first visit
+filter(clean_data, VISIT == 1 & CHI_MLU < 1.5)
 ```
-
 
 USING ARRANGE
 
@@ -194,7 +233,15 @@ USING ARRANGE
 2. Sort kids to find the kid who produced the least amount of words on the 1st visit.
 
 ```{r}
+# To sort the kids to find the one that produced the most words on the 6th visit
+Visit_6=subset(clean_data, clean_data$VISIT==6)
+arrange(Visit_6, c(Visit_6$tokens_CHI))
+# ID = 55 produced the most words
 
+# To sort the kids to find the one that produced the least amount of words on the 1st visit
+Visit_1=subset(clean_data, clean_data$VISIT==1)
+arrange(Visit_1, c(Visit_1$tokens_CHI))
+#ID = 57 produced the least amount of words on the first visit
 
 ```
 
@@ -204,7 +251,14 @@ USING SELECT
 2. What happens if you include the name of a variable multiple times in a select() call?
 
 ```{r}
+# Subset with only ASD children
+ASD_data=subset(clean_data, Diagnosis == "ASD")
+ASD_data2=select(ASD_data, ID, VISIT, CHI_MLU, tokens_CHI)
 
+# What happens if you include the name of a variable multiple times?
+ASD_data3=select(ASD_data, ID, ID, VISIT, CHI_MLU, tokens_CHI)
+
+# Nothing happens. The variable only appears once. 
 ```
 
 
@@ -214,6 +268,5 @@ USING MUTATE, SUMMARISE and PIPES
 3. The solution to task above enables us to assess the average amount of words produced by each child. Why don't we just use these average values to describe the language production of the children? What is the advantage of keeping all the data?
 
 ```{r}
-
-
+# 3. When you average out the amount of words you lose the development that each child undergoes. By using alle the data we are able to compare the development of typically devolping children and autistic children. 
 ```
