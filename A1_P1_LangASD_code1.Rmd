@@ -225,6 +225,9 @@ filter(clean_data, CHI_MLU > 2.7)
 
 # Less than 1.5 morphemes on first visit
 filter(clean_data, VISIT == 1 & CHI_MLU < 1.5)
+
+missed = clean_data %>% group_by(ID) %>% tally()
+filter(missed, n < 6)
 ```
 
 USING ARRANGE
