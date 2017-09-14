@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1 - Language Development in ASD - part 2"
-author: "Riccardo Fusaroli"
+author: "Esther Dyngby Jensen"
 date: "September 2017"
 output: html_document
 ---
@@ -18,7 +18,9 @@ ii) the amount of unique words that each kid uses in each video. Same for the pa
 iii) the amount of morphemes per utterance (Mean Length of Utterance) displayed by each child in each video. Same for the parent. 
 
 This data is in the file you prepared in the previous class. 
+```{r}
 
+```
 NB. A few children have been excluded from your datasets. We will be using them next week to evaluate how good your models are in assessing the linguistic development in new participants.
 
 We then want to test the language trajectory of child and parent over time.
@@ -37,7 +39,6 @@ N.B. The following lines are a summary of the questions to be answered, the step
 
 Describe the participant samples in the dataset (e.g. by diagnosis, age, etc.). Do you think the two groups are well balanced? If not, what do you think was the reason?
 
-[HERE GOES YOUR ANSWER]
 
 ### Exercise 2) Children learning language: the effects of time and ASD
 Describe linguistic development in TD and ASD children in terms of Mean Length of Utterance (MLU)?
@@ -79,7 +80,7 @@ Load necessary libraries : what will you need?
 - e.g. mixed effects models
 
 ```{r Load Libraries}
-
+library(lmerTest);library(lme4);library(ggplot2);library(tidyverse)
 ```
 
 ### Define your working directory and load the data
@@ -90,12 +91,9 @@ Load necessary libraries : what will you need?
 - Load the data you saved last time (use read_csv(fileName))
 
 ```{r Load Data}
-
-#getwd()
-#locpath=
-#setwd(locpath)
-#Data =
-
+setwd("~/OneDrive - Aarhus universitet/AU-Cognitive Science/3rd Semester/Experimental Methods 3/Exercise/Assignments/Assignment 1")
+data=read.csv("clean_data.csv")
+data=data[,-1]
 ```
 
 ### Characterize the participants (Exercise 1)
@@ -107,10 +105,30 @@ Make sure the variables are in the right format.
 Describe the characteristics of the two groups of participants and whether the two groups are well matched.
 
 ```{r}
+# Making a subset of 1st visit data
+Visit1_data=subset(data, data$visit == 1)
+
+modelAgeDiagnosis = lm(Age~Diagnosis,Visit1_data)
+summary(modelAgeDiagnosis)
+
+plot = ggplot(Visit1_data, aes(x = Diagnosis, y = Age)) + geom_violin()
+plot
+
+modelNVIQDiagnosis = lm(nonVerbalIQ~Diagnosis,Visit1_data)
+summary(modelNVIQDiagnosis)
+
+plot1 = ggplot(Visit1_data, aes(x = Diagnosis, y = nonVerbalIQ)) + geom_violin()
+plot1
+
+modelVIQDiagnosis = lm(verbalIQ~Diagnosis,Visit1_data)
+summary(modelVIQDiagnosis)
+
+plot2 = ggplot(Visit1_data, aes(x = Diagnosis, y = verbalIQ)) + geom_violin()
+plot2
 
 ```
 
-[REPORT THE RESULTS]
+Testing different parameters on typically developed childen and ASD children in the dataset, it appears that there is a significant difference between age, as it seems ASD childeren are significantly older than the TD children (b=-12.63 , se = 1.02 , t-value(60) = -12.32 , p<0.001)
 
 ## Let's test hypothesis 1: Children with ASD display a language impairment  (Exercise 2)
 
