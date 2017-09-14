@@ -1,7 +1,7 @@
 ---
-title: "A1_P1_Student"
-author: "Céline Carlsen"
-date: "29/8/2017"
+title: "Assignment 1, Portfolio 1"
+author: "Esther Dyngby Jensen"
+date: "09/09/2017"
 output: html_document
 ---
 
@@ -39,6 +39,7 @@ Set the working directory (the directory with your data and code for these assig
 
 ```{r}
 setwd("~/OneDrive - Aarhus universitet/AU-Cognitive Science/3rd Semester/Experimental Methods 3/Exercise/Assignments/Assignment 1")
+library(stringr);library(tidyverse);library(plyr);library(dplyr)
 ```
 
 Load the three data sets, after downloading them from dropbox and saving them in your working directory:
@@ -83,7 +84,6 @@ Tip: There is a package called stringr, which will be very handy for you also in
 
 ```{r}
 #removing everything else than digits from the column "visit".
-library(stringr)
 dat2$visit = str_extract(dat2$visit, "\\d")
 dat3$visit = str_extract(dat3$visit, "\\d")
 
@@ -120,7 +120,7 @@ The variables we need are: Child.ID, Visit, Ethnicity, Diagnosis, Gender, Age, A
 It would be smart to rename the MullenRaw and ExpressiveLangRaw into something you can remember (i.e. nonVerbalIQ, verbalIQ)
 
 ```{r}
-library(tidyverse)
+
 #To subset interesting variables
 dat1=select(dat1, ID, visit, Ethnicity, Gender, Age, Diagnosis, ADOS, MullenRaw, ExpressiveLangRaw)
 dat2=select(dat2, ID, visit, MOT_MLU, MOT_LUstd, CHI_MLU, CHI_LUstd)
@@ -161,13 +161,13 @@ Tip: the final dataset should have as many rows as the the old one.
 Visit1_data=subset(DATA, DATA$visit == 1)
 
 #To only select relevant columns
-ID_visit=select(Visit1_data, ID, ADOS, nonVerbalIQ, verbalIQ)
+Visit1_data=select(Visit1_data, ID, ADOS, nonVerbalIQ, verbalIQ)
 
 #To omit irrelevant NA columns from dataset 
 DATA=DATA[,-7:-9]
 
 #To merge datasets back together
-DATA = merge(DATA, ID_visit, by = "ID")
+DATA = merge(DATA, Visit1_data, by = "ID")
 ```
 
 Now, we are almost ready to actually start working with the data. However, here are some additional finishing touches:
@@ -200,7 +200,7 @@ DATA$Diagnosis=revalue(DATA$Diagnosis, c("A"="ASD", "B"="TD"))
 Save the data set using into a csv file. Hint: look into write.csv()
 
 ```{r}
-write.csv(DATA2, "clean_data.csv")
+write.csv(DATA, "clean_data.csv")
 ```
 
 
@@ -224,7 +224,7 @@ clean_data=clean_data[,-1]
 filter(clean_data, CHI_MLU > 2.7)
 
 # Less than 1.5 morphemes on first visit
-filter(clean_data, VISIT == 1 & CHI_MLU < 1.5)
+filter(clean_data, visit == 1 & CHI_MLU < 1.5)
 
 missed = clean_data %>% group_by(ID) %>% tally()
 filter(missed, n < 6)
@@ -256,10 +256,10 @@ USING SELECT
 ```{r}
 # Subset with only ASD children
 ASD_data=subset(clean_data, Diagnosis == "ASD")
-ASD_data2=select(ASD_data, ID, VISIT, CHI_MLU, tokens_CHI)
+ASD_data2=select(ASD_data, ID, visit, CHI_MLU, tokens_CHI)
 
 # What happens if you include the name of a variable multiple times?
-ASD_data3=select(ASD_data, ID, ID, VISIT, CHI_MLU, tokens_CHI)
+ASD_data2=select(ASD_data, ID, ID, visit, CHI_MLU, tokens_CHI)
 
 # Nothing happens. The variable only appears once. 
 ```
@@ -271,5 +271,16 @@ USING MUTATE, SUMMARISE and PIPES
 3. The solution to task above enables us to assess the average amount of words produced by each child. Why don't we just use these average values to describe the language production of the children? What is the advantage of keeping all the data?
 
 ```{r}
+#1
+mean(clean_data$tokens_CHI)
+clean_data%>%
+  group_by(ID)%>%
+  summarize(mean=mean(CHI_MLU))%>%
+
+#2
+DatawCHItoken= clean_data %>% group_by(ID) %>% mutate(mean_token_CHI = sum(tokens_CHI)/length(tokens_CHI))
+
+
+
 # 3. When you average out the amount of words you lose the development that each child undergoes. By using alle the data we are able to compare the development of typically devolping children and autistic children. 
 ```
