@@ -39,6 +39,9 @@ N.B. The following lines are a summary of the questions to be answered, the step
 
 Describe the participant samples in the dataset (e.g. by diagnosis, age, etc.). Do you think the two groups are well balanced? If not, what do you think was the reason?
 
+Testing different parameters on typically developed childen and ASD children in the dataset, it appears that there is a significant difference between age, as it seems ASD childeren are significantly older than the TD children (b=-12.63 , se = 1.02 , t-value(60) = -12.32 , p<0.001)
+
+
 
 ### Exercise 2) Children learning language: the effects of time and ASD
 Describe linguistic development in TD and ASD children in terms of Mean Length of Utterance (MLU)?
@@ -80,7 +83,7 @@ Load necessary libraries : what will you need?
 - e.g. mixed effects models
 
 ```{r Load Libraries}
-library(lmerTest);library(lme4);library(ggplot2);library(tidyverse)
+library(lmerTest);library(lme4);library(ggplot2);library(tidyverse);library(MuMIn)
 ```
 
 ### Define your working directory and load the data
@@ -108,18 +111,25 @@ Describe the characteristics of the two groups of participants and whether the t
 # Making a subset of 1st visit data
 Visit1_data=subset(data, data$visit == 1)
 
+#age test
 modelAgeDiagnosis = lm(Age~Diagnosis,Visit1_data)
 summary(modelAgeDiagnosis)
 
 plot = ggplot(Visit1_data, aes(x = Diagnosis, y = Age)) + geom_violin()
 plot
 
+#gender test
+modelG=glm(Gender~Diagnosis, family=binomial,Visit1_data)
+summary(modelG)
+
+#Non verbal IQ test
 modelNVIQDiagnosis = lm(nonVerbalIQ~Diagnosis,Visit1_data)
 summary(modelNVIQDiagnosis)
 
 plot1 = ggplot(Visit1_data, aes(x = Diagnosis, y = nonVerbalIQ)) + geom_violin()
 plot1
 
+#Verbal IQ test
 modelVIQDiagnosis = lm(verbalIQ~Diagnosis,Visit1_data)
 summary(modelVIQDiagnosis)
 
@@ -128,7 +138,10 @@ plot2
 
 ```
 
-Testing different parameters on typically developed childen and ASD children in the dataset, it appears that there is a significant difference between age, as it seems ASD childeren are significantly older than the TD children (b=-12.63 , se = 1.02 , t-value(60) = -12.32 , p<0.001)
+Reporting results of models:
+Age: there is a significant difference, ASD children are significantly older than TD children (b=-12.63 , se = 1.02 , t-value(60) = -12.32 , p<0.001).
+Non-verbal IQ: XXXXXX (b=-0.89 , se = 1.17 , t-value(60) = -0.76 , p=0.45).
+Verbal IQ: XXXXXXXX 
 
 ## Let's test hypothesis 1: Children with ASD display a language impairment  (Exercise 2)
 
@@ -141,12 +154,25 @@ Remember to plot the data first and then to run a statistical test.
 - Which variable(s) should be included as random factors?
 
 ```{r}
+Scatterplot = ggplot(data, aes(visit, CHI_MLU, color=Diagnosis))+geom_point()+geom_smooth(method=lm)
+Scatterplot
 
+# Statistical test
+mixedmodel=lmer(CHI_MLU~visit+Diagnosis +(1+visit|ID),data, REML=FALSE)
+summary(mixedmodel)
+
+##
+Including fixed and random factors. 
+Fixed effects:visit and diagnosis. 
+Random factors is ID and Visit
+##
 ```
 
 How would you evaluate whether the model is a good model?
 
 ```{r}
+# Finding R-squared
+r.squaredGLMM(mixedmodel)
 
 ```
 
@@ -172,7 +198,11 @@ Linguistic development of children MLU is affected by ... [COMPLETE]
 ### Hypothesis: Parental MLU changes: i) over time, ii) according to diagnosis
 
 ```{r}
+Scatterplot1 = ggplot(data, aes(visit, MOT_MLU, color=Diagnosis))+geom_point()+geom_smooth(method=lm)
+Scatterplot1
 
+mixedmodel1=lmer(MOT_MLU~Age+Diagnosis +(1+Age|ID),data, REML=FALSE)
+summary(mixedmodel1)
 ```
 
 [REPORT THE RESULTS]
