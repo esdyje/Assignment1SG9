@@ -158,7 +158,7 @@ Tip: the final dataset should have as many rows as the the old one.
 
 ```{r}
 # To only get data for visit 1
-Visit1_data=subset(DATA, DATA$visit == 1)no
+Visit1_data=subset(DATA, DATA$visit == 1)
 
 #To only select relevant columns
 Visit1_data=select(Visit1_data, ID, ADOS, nonVerbalIQ, verbalIQ)
