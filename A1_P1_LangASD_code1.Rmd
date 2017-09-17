@@ -158,7 +158,7 @@ Tip: the final dataset should have as many rows as the the old one.
 
 ```{r}
 # To only get data for visit 1
-Visit1_data=subset(DATA, DATA$visit == 1)
+Visit1_data=subset(DATA, DATA$visit == 1)no
 
 #To only select relevant columns
 Visit1_data=select(Visit1_data, ID, ADOS, nonVerbalIQ, verbalIQ)
@@ -272,10 +272,7 @@ USING MUTATE, SUMMARISE and PIPES
 
 ```{r}
 #1
-mean(clean_data$tokens_CHI)
-clean_data%>%
-  group_by(ID)%>%
-  summarize(mean=mean(CHI_MLU))%>%
+datavisit= clean_data %>%group_by(visit) %>% mutate(M_words_Visit) = sum(clean_data$tokens_CHI)/length(clean_data$visit)
 
 #2
 DatawCHItoken= clean_data %>% group_by(ID) %>% mutate(mean_token_CHI = sum(tokens_CHI)/length(tokens_CHI))
