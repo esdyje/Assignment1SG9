@@ -70,7 +70,7 @@ Tip: Look into the package data.table, or google "how to rename variables in R"
 #renaming ID-columns
 names(dat1)[names(dat1)=="Child.ID"] <- "ID"
 names(dat2)[names(dat2)=="SUBJ"] <- "ID"
-names(dat3)[names(dat3)=="SUBJ"] <- "ID"
+names(dat3)[names(dat3)=="SUBJ"] <- "ID" 
 
 #renaming Visit-columns
 names(dat1)[names(dat1)=="Visit"] <- "visit"
@@ -104,7 +104,6 @@ dat1$ID=gsub("\\.","",dat1$ID)
 dat2$ID=gsub("\\.","",dat2$ID)
 dat3$ID=gsub("\\.","",dat3$ID)
 ```
-
 2d. Now that the nitty gritty details of the different data sets are fixed, we want to make a subset of each data set only containig the variables that we wish to use in the final data set.
 For this we use the tidyverse package, which contain the function select(). 
 
@@ -118,7 +117,7 @@ The variables we need are: Child.ID, Visit, Ethnicity, Diagnosis, Gender, Age, A
 * tokens stands for overall amount of words (if "doggie" is used 100 times it counts for 100) 
 
 It would be smart to rename the MullenRaw and ExpressiveLangRaw into something you can remember (i.e. nonVerbalIQ, verbalIQ)
-
+ 
 ```{r}
 
 #To subset interesting variables
@@ -131,7 +130,6 @@ dat1=plyr::rename(dat1, c("MullenRaw" = "nonVerbalIQ"))
 dat1=plyr::rename(dat1, c("ExpressiveLangRaw" = "verbalIQ"))
 
 ```
-
 2e. Finally we are ready to merge all the data sets into just one. 
 Google "How to merge datasets in R"
 Tip: Use the merge() function for this. 
@@ -196,13 +194,11 @@ DATA$Diagnosis=revalue(DATA$Diagnosis, c("A"="ASD", "B"="TD"))
 
 ```
 
-
 Save the data set using into a csv file. Hint: look into write.csv()
 
 ```{r}
 write.csv(DATA, "clean_data.csv")
 ```
-
 
 3) Now that we have a nice clean data set to use for the analysis next week, we shall play a bit around with it. The following exercises are not relevant for the analysis, but are here so you can get familiar with the functions within the tidyverse package.
 
@@ -221,13 +217,15 @@ clean_data=read.csv("clean_data.csv")
 clean_data=clean_data[,-1]
 
 # Mean length of untterances of more than 2.7 morphemes
-filter(clean_data, CHI_MLU > 2.7)
+df1=filter(clean_data, CHI_MLU > 2.7)
+df1a=data.frame(df1$ID, df1$visit)
 
 # Less than 1.5 morphemes on first visit
-filter(clean_data, visit == 1 & CHI_MLU < 1.5)
+df2=filter(clean_data, visit == 1 & CHI_MLU < 1.5)
 
+# have not completed all trials.
 missed = clean_data %>% group_by(ID) %>% tally()
-filter(missed, n < 6)
+missed = filter(missed, n < 6)
 ```
 
 USING ARRANGE
@@ -237,13 +235,13 @@ USING ARRANGE
 
 ```{r}
 # To sort the kids to find the one that produced the most words on the 6th visit
-Visit_6=subset(clean_data, clean_data$VISIT==6)
-arrange(Visit_6, c(Visit_6$tokens_CHI))
+Visit_6=subset(clean_data, clean_data$visit==6)
+Visit_6x=arrange(Visit_6, c(Visit_6$tokens_CHI))
 # ID = 55 produced the most words
 
 # To sort the kids to find the one that produced the least amount of words on the 1st visit
-Visit_1=subset(clean_data, clean_data$VISIT==1)
-arrange(Visit_1, c(Visit_1$tokens_CHI))
+Visit_1=subset(clean_data, clean_data$visit==1)
+Visit_1x=arrange(Visit_1, c(Visit_1$tokens_CHI))
 #ID = 57 produced the least amount of words on the first visit
 
 ```
@@ -272,12 +270,9 @@ USING MUTATE, SUMMARISE and PIPES
 
 ```{r}
 #1
-datavisit= clean_data %>%group_by(visit) %>% mutate(M_words_Visit) = sum(clean_data$tokens_CHI)/length(clean_data$visit)
-
+datavisit = clean_data %>% group_by(visit) %>% mutate (M_words_VISIT = sum(tokens_CHI)/length(visit))
 #2
 DatawCHItoken= clean_data %>% group_by(ID) %>% mutate(mean_token_CHI = sum(tokens_CHI)/length(tokens_CHI))
-
-
 
 # 3. When you average out the amount of words you lose the development that each child undergoes. By using alle the data we are able to compare the development of typically devolping children and autistic children. 
 ```

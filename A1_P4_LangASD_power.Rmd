@@ -1,0 +1,184 @@
+---
+title: "Assignment 1 - Language Development in ASD - part 4"
+author: "Riccardo Fusaroli"
+date: "August 10, 2017"
+output: html_document
+---  
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Welcome to the fourth exciting part of the Language Development in ASD exercise
+
+In this exercise we will assess how many participants we would need to adequately replicate our findings (ensuring our sample size is adequate, our alpha at 0.05 and our beta at 0.8).
+
+### Exercise 1
+
+How much power does your study have (if your model estimates are quite right)?
+- [GitHub]Load your dataset, fit your favorite model, assess power for your main effects and interactions of interest.
+- Report the power analysis and comment on what you can (or cannot) use its estimates for.
+```{r}
+setwd("~/OneDrive - Aarhus universitet/AU-Cognitive Science/3rd Semester/Experimental Methods 3/Exercise/Assignments/Assignment 1")
+data=read.csv("clean_data.csv")
+data=data[,-1]
+#loading libraries
+library(lmerTest);library(lme4);library(simr);library(MASS):library(plyr):library(tidyverse);library(stringr);library(tidyr);library(dplyr)
+
+
+```
+
+
+```{r}
+#loading favourite model
+model1 = lmerTest::lmer(CHI_MLU~1+visit*Diagnosis+(1+visit|ID),data, REML=FALSE)
+summary(model1)
+model2=lmerTest::lmer(CHI_MLU~1+visit+Diagnosis+(1+visit|ID),data, REML=FALSE)
+
+#finding power
+powerm2visit = powerSim(model2,fixed("visit"),nsim=200)
+powerm2visit
+powerm2diagnosis =powerSim(model2,fixed("Diagnosis"),nsim=200)
+powerm2diagnosis
+powerm1interaction = powerSim(model1,fixed("visit:Diagnosis"), nsim=100)
+powerm1interaction
+```
+  ##### Visit
+Power value: 100% - Within the conficence interval, 95% of the times the analysis is run, a power between 98.17% and 100% will be achieved.
+  ##### Diagnosis
+Power value: 45% - Within the confidence interval, 95% of the times, the power of the analysis will be within 37.98% and 52.18%
+  ##### The interaction
+Power value: 100% - Within the confidencenterval, the power will be within 96.38% and 100%, 95% of the times.
+
+### Exercise 2
+How would you perform a more conservative power analysis?
+- Identify and justify a minimum effect size for each of your relevant effects
+- [GitHub] take the model from exercise 1 and replace the effects with the minimum effect size that you'd accept.
+- [GitHub] assess the power curve by Child.ID, identifying an ideal number of participants to estimate each effect
+- OPTIONAL if your power estimates do not reach an acceptable threshold simulate additional participants and repeat the previous analysis
+- Report the power analysis and comment on what you can (or cannot) use its estimates for.
+
+```{r}
+#effectsize for visit
+powerm2visit
+#effectsize for the last two
+summary(model1)
+summary(model2)
+
+#setting interesting effectsizes for model 1 (interaction Model)
+fixef(model1)["visit"] <- 0.05
+fixef(model1)["DiagnosisTD"] <- -.10
+fixef(model1)["visit:DiagnosisTD"]=0.15
+summary(model1)
+
+#setting interesting effectsizes for model 2 
+fixef(model2)["visit"] <- 0.05
+fixef(model2)["DiagnosisTD"] <- -.10
+summary(model2)
+
+#make power curve for visit
+powerCurveV = powerCurve(model2, fixed("visit"),along="ID", nsim=100) 
+plot(powerCurveV)
+powerCurveV
+
+#make power curve for diagnosis
+powerCurveD = powerCurve(model2, fixed("Diagnosis"),along="ID", nsim=100) 
+plot(powerCurveD)
+powerCurveD
+
+#make power curve for the interaction between visit and diagnosis
+powerCurveVD = powerCurve(model1, fixed("visit:Diagnosis"),along="ID", nsim=100) 
+plot(powerCurveVD)
+powerCurveVD
+```
+The effectsize of the interaction effect was set to 0.15, partially because of previous knowledge of MLU and the fact that MLU is a relatively low numeric value. Combining this with theory about effectsizes and wanting to make a more conservative analysis, this was the estimated value of effectsize for the interaction between visit and diagnosis. The reason for lowering the effectsize is because studies might be underpowered and causing a skewed effectsize.
+Setting an effectsize for the interaction between visit and diagnosis at 0.15, the powercurve tells us that theres a minimum need of aproximately 35 participants. 
+
+```{r}
+#create model again to get normal betas 
+model1normBETA = lmerTest::lmer(CHI_MLU~1+visit*Diagnosis+(1+visit|ID),data, REML=FALSE)
+
+### Riccardo's clumsy function to simulate new participants
+### TO DO points are only notes for myself, so not part of the assignment
+  
+createNewData <- function (participants,visits,model){
+  # participants is the number of subjects
+  # visits is the number of visits
+  # TO DO: LOOP THROUGH ALL FE ROWS AND AUTOMATICALLY EXTRACT NAMES OF FIXED EFFECTS AND ESTIMATES
+  fe <- fixef(model)
+  Intercept <- fe[1] #intercept
+  bVisit <- fe[2] #visit
+  bDiagnosis <- fe[3] #diagnosis
+  bVisitDiagnosis <- fe[4] #visit diagnosis interaction
+  # TO DO: INTEGRATE STANDARD ERROR?
+  
+  # TO DO: LOOP THROUGH ALL VC COMPONENTS AND AUTOMATICALLY EXTRACT NAMES OF EFFECTS AND ESTIMATES
+  vc<-VarCorr(model) # variance component
+  sigmaSubject <- as.numeric(attr(vc[[1]],"stddev")[1]) # random intercept by subject
+  sigmaVisit <- as.numeric(attr(vc[[1]],"stddev")[2]) # random slope of visit over subject
+  sigmaResiduals <- as.numeric(attr(vc,"sc"))
+  sigmaCorrelation <- as.numeric(attr(vc[[1]],"correlation")[2])
+  
+  # Create an empty dataframe
+  d=expand.grid(Visit=1:visits,ID=1:participants)
+  # Randomly sample from a binomial (to generate the diagnosis)
+  condition <- sample(rep(0:1, participants/2))
+  d$Diagnosis<-condition[d$ID]
+  d$Diagnosis[is.na(d$Diagnosis)]<-1
+  
+  ## Define variance covariance matrices:
+  Sigma.u<-matrix(c(sigmaSubject^2,
+                    sigmaCorrelation*sigmaSubject*sigmaVisit,
+                    sigmaCorrelation*sigmaSubject*sigmaVisit,
+                    sigmaVisit^2),nrow=2)
+  
+  ## generate new fake participants (column1=RandomIntercept, column2=RandomSlope)
+  u<-mvrnorm(n=participants,
+             mu=c(0,0),Sigma=cov(ranef(model)$ID))
+  
+  ## now generate fake data:
+  ### the outcome is extracted from a gaussian with
+  ### the solution to the model's equation as mean and
+  ### the residual standard deviation as standard deviation 
+  d$CHI_MLU <- rnorm(participants*visits,
+                     (Intercept+u[,1]) +
+                     (bVisit+u[,2])*d$Visit + 
+                     bDiagnosis*d$Diagnosis ,sigmaResiduals)  
+  
+  return(d)
+}
+fakedata = createNewData(100,6,model1normBETA)
+
+# To change diagnosis variable
+fakedata$Diagnosis=as.factor(fakedata$Diagnosis)
+fakedata$Diagnosis=revalue(fakedata$Diagnosis, c("0"="ASD", "1"="TD"))
+fakedata$ID=fakedata$ID+100
+fakedata=plyr::rename(fakedata, c("Visit"="visit"))
+
+#selecting relevant
+dataselected=dplyr::select(data, visit, ID, Diagnosis, CHI_MLU)
+
+#merging
+datawfake=rbind(fakedata,dataselected)
+
+#model 1 again w. new dataset w fakedata
+model1wfakedata = lmerTest::lmer(CHI_MLU~1+visit*Diagnosis+(1+visit|ID),datawfake, REML=FALSE)
+model2wfakedata = lmerTest::lmer(CHI_MLU~1+visit+Diagnosis+(1+visit|ID),datawfake, REML=FALSE)
+
+#make power curve for the new data including the fake data
+powerCurvewfakeV = powerCurve(model2wfakedata, fixed("visit"),along="ID", nsim=10) 
+plot(powerCurvewfakeV)
+powerCurvewfakeV
+
+powerCurvewfakeD = powerCurve(model2wfakedata, fixed("Diagnosis"),along="ID", nsim=100) 
+plot(powerCurvewfakeD)
+powerCurvewfakeD
+
+```
+
+
+### Exercise 3
+
+Assume you have only the resources to collect 30 kids (15 with ASD and 15 TDs). Identify the power for each relevant effect and discuss whether it's worth to run the study and why.
+
+Since the powercurves of the different effects have shown a the number of participants needed in relation to achieve power above 80%, the question of 30 participating kids can be answered through these. The interaction effect of visit and diagnosis had no need of more data, so the powercurve run showed a minimum need of approximatly 18 participants, so 30 participants would be sufficient for this test. Further more, the effect of visit needed a larger sample, and showed a need of approximately 20 participants - here will the 30 participants also be sufficient in achieving power-rate above 100%. For the last test of effect, diagnosis also needed a larger sample size. The powercurve of this showed that it is hard, if not impossible to achieve power above 80% - with participants up till 200.
