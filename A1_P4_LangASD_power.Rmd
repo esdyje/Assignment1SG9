@@ -13,11 +13,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 In this exercise we will assess how many participants we would need to adequately replicate our findings (ensuring our sample size is adequate, our alpha at 0.05 and our beta at 0.8).
 
-### Exercise 1
-
-How much power does your study have (if your model estimates are quite right)?
-- [GitHub]Load your dataset, fit your favorite model, assess power for your main effects and interactions of interest.
-- Report the power analysis and comment on what you can (or cannot) use its estimates for.
 ```{r}
 setwd("~/OneDrive - Aarhus universitet/AU-Cognitive Science/3rd Semester/Experimental Methods 3/Exercise/Assignments/Assignment 1")
 data=read.csv("clean_data.csv")
@@ -27,7 +22,11 @@ library(lmerTest);library(lme4);library(simr);library(MASS):library(plyr):librar
 
 
 ```
+### Exercise 1
 
+How much power does your study have (if your model estimates are quite right)?
+- [GitHub]Load your dataset, fit your favorite model, assess power for your main effects and interactions of interest.
+- Report the power analysis and comment on what you can (or cannot) use its estimates for.
 
 ```{r}
 #loading favourite model
