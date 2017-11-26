@@ -51,7 +51,7 @@ How did your models from last time perform? In this exercise you have to compare
 
 ```{r}
 #loading model
-bestmodel=lmer(CHI_MLU~visit+MOT_MLU+verbalIQ+(1+visit|ID),traindata, REML=FALSE)
+bestmodel=lme4::lmer(CHI_MLU~visit+MOT_MLU+verbalIQ+(1+visit|ID),traindata, REML=FALSE)
 summary(bestmodel)
 
 #performance of the model on previous data
@@ -119,55 +119,21 @@ write.csv(DATA, "clean_testdata.csv")
 testdata=read.csv("clean_testdata.csv")
 testdata=testdata[,-1]
 
-
 #run model on test data
 rmse(bestmodel, testdata)
 
-predict(bestmodel, testdata, interval="predict")
+Pred=predict(bestmodel, testdata, interval="predict")
+round(Pred, digits = 3)
 
-predictInterval(merMod = bestmodel, newdata = testdata, 
+PredInt=predictInterval(merMod = bestmodel, newdata = testdata, 
                         level = 0.95, n.sims = 1000,
                         stat = "median", type="linear.prediction",
                         include.resid.var = TRUE)
-
+?predictInterval()
 ```
 
 ```{r}
-#making ID factorial
-traindata$ID=as.factor(traindata$ID)
-testdata$ID=as.factor(testdata$ID)
 
-#Removing NA values
-testdata=na.omit(testdata)
-traindata=na.omit(traindata)
-
-#creating folds
-folds=createFolds(unique(traindata$ID),4)
-
-trainRMSE=NULL
-testRMSE=NULL
-n=1 
-
-for (fold in folds) {
-   #subset of traindata
-  train2=subset(traindata,!(ID %in% fold))
-  #create a test
-  test2=subset(traindata,(ID%in% fold))
-  
-  #to train model 
-  model=lmer(CHI_MLU ~ 1+visit + Diagnosis + (1+visit|ID), train2, REML = FALSE)
-  #RMSE for train data
-  trainRMSE[n]=Metrics::rmse(train2$CHI_MLU, predict(model, train2))
-  #RMSE for testdata
-  pre=predict(model,test2, allow.new.levels=T)
-  testRMSE[n]=Metrics::rmse(test2$CHI_MLU, pre)
-
-  n=n+1
-  #saving variables
-  }
-
-mean(testRMSE)
-mean(trainRMSE)
 ```
 
 root-mean-square error (RMSE) is a frequently used measure of the differences between values (sample and population values) predicted by a model or an estimator and the values actually observed.
@@ -189,7 +155,45 @@ In this exercise you have to use cross-validation to calculate the predictive er
 - Bonus Question 2: What is the effect of changing the number of folds? Can you plot RMSE as a function of number of folds?
 - Bonus Question 3: compare the cross-validated predictive error against the actual predictive error on the test data
 ```{r}
+#making ID factorial
+traindata$ID=as.factor(traindata$ID)
+testdata$ID=as.factor(testdata$ID)
 
+#Removing NA values
+testdata=na.omit(testdata)
+traindata=na.omit(traindata)
+
+#creating folds
+folds=createFolds(unique(traindata$ID),4)
+
+#crosvalidating model 1
+trainRMSE=NULL
+testRMSE=NULL
+n=1 
+
+for (fold in folds) {
+   #subset of traindata
+  train2=subset(traindata,!(ID %in% fold))
+  #create a test
+  test2=subset(traindata,(ID%in% fold))
+  
+  #to train model 
+  model1=lmerTest::lmer(CHI_MLU ~ 1+visit + Diagnosis + (1+visit|ID), train2, REML = FALSE)
+  #RMSE for train data
+  trainRMSE[n]=Metrics::rmse(train2$CHI_MLU, predict(model1, train2))
+  #RMSE for testdata
+  pre=predict(model1,test2, allow.new.levels=T)
+  testRMSE[n]=Metrics::rmse(test2$CHI_MLU, pre)
+
+  n=n+1
+  #saving variables
+}
+
+#mean performance of the crossvalidated model1
+mean(testRMSE)
+mean(trainRMSE)
+
+#Crossvalidating model 2
 trainRMSE2=NULL
 testRMSE2=NULL
 n=1 
@@ -202,18 +206,47 @@ for (fold in folds) {
   test2=subset(traindata,(ID%in% fold))
   
   #to train model 
-  model3=lmer(CHI_MLU~visit+MOT_MLU+verbalIQ+(1+visit|ID),train2, REML=FALSE)
+  model2=lmerTest::lmer(CHI_MLU~visit+MOT_MLU+verbalIQ+(1+visit|ID),train2, REML=FALSE)
   #RMSE for train data
-  trainRMSE2[n]=Metrics::rmse(train2$CHI_MLU, predict(model3, train2))
+  trainRMSE2[n]=Metrics::rmse(train2$CHI_MLU, predict(model2, train2))
   #RMSE for testdata
-  pre=predict(model3,test2, allow.new.levels=T)
+  pre=predict(model2,test2, allow.new.levels=T)
   testRMSE2[n]=Metrics::rmse(test2$CHI_MLU, pre)
 
   n=n+1
   #saving variables
-  }
+}
+#mean performance of the crossvalidated model2
 mean(trainRMSE2)
 mean(testRMSE2)
+
+#Crossvalidating model 3
+trainRMSE3=NULL
+testRMSE3=NULL
+n=1 
+
+for (fold in folds) {
+   #subset of traindata
+  train2=subset(traindata,!(ID %in% fold))
+  #create a test
+  test2=subset(traindata,(ID%in% fold))
+  
+  #to train model 
+  model3=lmerTest::lmer(CHI_MLU~1+visit*Diagnosis+MOT_MLU+verbalIQ+(1 + visit|ID),train2,REML = FALSE)
+
+  #RMSE for train data
+  trainRMSE3[n]=Metrics::rmse(train2$CHI_MLU, predict(model3, train2))
+  #RMSE for testdata
+  pre=predict(model3,test2, allow.new.levels=T)
+  testRMSE3[n]=Metrics::rmse(test2$CHI_MLU, pre)
+
+  n=n+1
+  #saving variables
+}
+#mean performance of the crossvalidated model3
+mean(trainRMSE3)
+mean(testRMSE3)
+
 ```
 ### Exercise 3) Assessing the single child
 
