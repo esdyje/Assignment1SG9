@@ -289,14 +289,28 @@ Berniedata$Diagnosis=revalue(Berniedata$Diagnosis, c("A"="ASD", "B"="TD"))
 #to make a subset of TD data
 TDdata=traindata[traindata$Diagnosis=="TD",]
 
+#Bernies MLU development
+ggplot(Berniedata, aes(x = visit, y= CHI_MLU, colour = Diagnosis)) + geom_smooth() + geom_point()+ggtitle("Bernie's development across visits")
+
 #model w/ TD data
 TDmodel=lmer(CHI_MLU ~ MOT_MLU+ verbalIQ + 1+visit + (1+visit|ID), TDdata, REML = FALSE)
 summary(TDmodel)
+
 
 #predicting bernie in relation to the TD model
 predictingbernie=predict(TDmodel, Berniedata, allow.new.levels=TRUE)
 distanceBernieTD=Berniedata$CHI_MLU - predictingbernie
 distanceBernieTD 
+
+#subsetting TD children at visit 6
+TDdata6=TDdata[TDdata$visit==6,]
+#modelling TD MLU at visit 6
+TDmodel6=lme4::lmer(CHI_MLU ~ MOT_MLU+ verbalIQ + 1+visit + (1+visit|ID), TDdata6, REML = FALSE)
+
+Bernie_6 = Berniedata[6,] # To subset visit 6
+Bernie_pred=predict(TDmodel, Bernie_6, allow.new.levels = T) 
+Bernie_6$CHI_MLU - Bernie_pred 
+
 ```
 Bernies development in MLU is in the most case better than TD-children of the traindata. For the first visit he performs better by 0.38 MLU. The second visit he performs worse than the MLU of TD-children, to be exact his MLU is short by -0.18. The third visit he is performing a great deal better with a value of 0.71. The 4th visit he is better than TD children by 0.18, and the 5th by 0.13 and the 6th visit he performs better by 0.22 MLU. All in all, Bernie performs better than TD-children with same verbal intelligence as him. 
 
