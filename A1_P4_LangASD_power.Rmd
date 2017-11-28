@@ -165,7 +165,7 @@ model1wfakedata = lmerTest::lmer(CHI_MLU~1+visit*Diagnosis+(1+visit|ID),datawfak
 model2wfakedata = lmerTest::lmer(CHI_MLU~1+visit+Diagnosis+(1+visit|ID),datawfake, REML=FALSE)
 
 #make power curve for the new data including the fake data
-powerCurvewfakeV = powerCurve(model2wfakedata, fixed("visit"),along="ID", nsim=10) 
+powerCurvewfakeV = powerCurve(model2wfakedata, fixed("visit"),along="ID", nsim=100) 
 plot(powerCurvewfakeV)
 powerCurvewfakeV
 
