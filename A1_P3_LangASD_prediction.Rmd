@@ -339,8 +339,6 @@ ggplot(Bernie_comp, aes(x = Visits, y= MLU, colour = Category)) + geom_smooth() 
 #subsetting TD children at visit 6
 TDdata6=TDdata[TDdata$visit==6,]
 #modelling TD MLU at visit 6
-TDmodel6=lme4::lmer(CHI_MLU ~ MOT_MLU+ verbalIQ + 1+visit + (1+visit|ID), TDdata6, REML = FALSE)
-
 Bernie_6 = Berniedata[6,] # To subset visit 6
 Bernie_pred=predict(TDmodel, Bernie_6, allow.new.levels = T) 
 Bernie_6$CHI_MLU - Bernie_pred 
