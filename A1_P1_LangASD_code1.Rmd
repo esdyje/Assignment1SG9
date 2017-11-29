@@ -218,10 +218,7 @@ clean_data=clean_data[,-1]
 library(plyr) 
 
 # Mean length of untterances of more than 2.7 morphemes #
-clean_data %>%
-  group_by(clean_data$ID) %>%
-  summarise(M=mean(clean_data$CHI_MLU)) %>%
-  filter(M >2.7)
+clean_data %>%group_by(ID) %>%summarise(M=mean(CHI_MLU)) %>%filter(M >2.7)
 
 # MLU of less than 1.5 morphemes on first visit
 df2=filter(clean_data, visit == 1 & CHI_MLU < 1.5)
@@ -273,12 +270,10 @@ USING MUTATE, SUMMARISE and PIPES
 
 ```{r}
 #1
-data2 = clean_data %>% group_by(visit) %>% mutate (Mean_words_VISIT = sum(tokens_CHI)/length(visit))
-
-datavisit = clean_data %>% group_by(visit) %>% mutate (Mean_words_v= sum(tokens_CHI)/length(visit))
+MeanTokenVisit = clean_data %>% group_by(visit) %>% mutate (Mean_words_VISIT = sum(tokens_CHI)/length(visit))
 
 #2
-DatawCHItoken= clean_data %>% group_by(ID) %>% mutate(mean_token_CHI = sum(tokens_CHI)/length(tokens_CHI))
+MeanTokenChild= clean_data %>% group_by(ID) %>% mutate(mean_token_CHI = sum(tokens_CHI)/length(tokens_CHI))
 
 # 3. When you average out the amount of words you lose the development that each child undergoes. By using alle the data we are able to compare the development of typically devolping children and autistic children. 
 ```
