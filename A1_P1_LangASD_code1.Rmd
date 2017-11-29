@@ -119,7 +119,6 @@ The variables we need are: Child.ID, Visit, Ethnicity, Diagnosis, Gender, Age, A
 It would be smart to rename the MullenRaw and ExpressiveLangRaw into something you can remember (i.e. nonVerbalIQ, verbalIQ)
  
 ```{r}
-
 #To subset interesting variables
 dat1=select(dat1, ID, visit, Ethnicity, Gender, Age, Diagnosis, ADOS, MullenRaw, ExpressiveLangRaw)
 dat2=select(dat2, ID, visit, MOT_MLU, MOT_LUstd, CHI_MLU, CHI_LUstd)
@@ -216,11 +215,15 @@ List all kids who:
 clean_data=read.csv("clean_data.csv")
 clean_data=clean_data[,-1]
 
-# Mean length of untterances of more than 2.7 morphemes
-df1=filter(clean_data, CHI_MLU > 2.7)
-df1a=data.frame(df1$ID, df1$visit)
+library(plyr) 
 
-# Less than 1.5 morphemes on first visit
+# Mean length of untterances of more than 2.7 morphemes #
+clean_data %>%
+  group_by(clean_data$ID) %>%
+  summarise(M=mean(clean_data$CHI_MLU)) %>%
+  filter(M >2.7)
+
+# MLU of less than 1.5 morphemes on first visit
 df2=filter(clean_data, visit == 1 & CHI_MLU < 1.5)
 
 # have not completed all trials.
@@ -270,7 +273,10 @@ USING MUTATE, SUMMARISE and PIPES
 
 ```{r}
 #1
-datavisit = clean_data %>% group_by(visit) %>% mutate (M_words_VISIT = sum(tokens_CHI)/length(visit))
+data2 = clean_data %>% group_by(visit) %>% mutate (Mean_words_VISIT = sum(tokens_CHI)/length(visit))
+
+datavisit = clean_data %>% group_by(visit) %>% mutate (Mean_words_v= sum(tokens_CHI)/length(visit))
+
 #2
 DatawCHItoken= clean_data %>% group_by(ID) %>% mutate(mean_token_CHI = sum(tokens_CHI)/length(tokens_CHI))
 
