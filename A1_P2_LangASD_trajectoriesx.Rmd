@@ -126,7 +126,7 @@ plot2
 ```
 
 #####Reporting results of models:
-Age: there is a significant difference, ASD children are significantly older than TD children (b=-12.63 , se = 1.02 , t-value(60) = -12.32 , p<0.001).
+Age: there is a significant difference, ASD children are significantly older than TD children (b=-12.63 , se = 1.03 , t-value(60) = -12.32 , p<0.001).
 Gender: results suggest that gender has a nonsignificant influence on the diagnosis (b=-0.36 , se = 0.7 , z-value(60) = -0.52  , p= 0.6)
 Non-verbal IQ: non-verbal IQ causes no inequality between the two groups, as it appears the values for TD children are not significantly different from ASD children (b=-0.89 , se = 1.17 , t-value(60) = -0.76 , p=0.45).
 Verbal IQ: TD children have no significantly higher verbal IQ than ASD children (b=2.9 , se = 1.625 , t-value(60) = 1.79 , p=0.78).
@@ -149,7 +149,11 @@ Scatterplot
 mixedmodel=lmer(CHI_MLU~visit+Diagnosis +(1+visit|ID),data, REML=FALSE)
 summary(mixedmodel)
 ```
-#####Including fixed and random factors. 
+The plot does not represent the model as each child doesn't have their individual intercept. Although is does work as a description of the data.
+######Reporting model above
+visit predicts MLU...
+Diagnosis does not predict MLU
+
 Fixed effects:visit and diagnosis. 
 Random factors: ID and Visit.
 
@@ -158,6 +162,8 @@ Random factors: ID and Visit.
 ```{r}
 # Finding R-squared
 r.squaredGLMM(mixedmodel)
+#marginal//conditional
+
 
 # Evaluating the model
 # Question:
@@ -172,6 +178,15 @@ First build the different models, then compare them to see which one is better
 
 ```{r}
 #Riccardo: Growth curve model havent we talked about yet... We shall wait
+
+Quadratic_m=lmer(CHI_MLU~visit+I(visit^2) + Diagnosis +(1+visit|ID),data, REML=FALSE)
+Cubic_m=lmer(CHI_MLU~visit+I(visit^2)+I(visit^3) + Diagnosis +(1+visit|ID),data, REML=FALSE)
+anova(mixedmodel,Quadratic_m,Cubic_m)
+
+# qua is significantly better than the linear model(x^2(1)=28.87, p>.05), but the cubic model is not significantly better.
+
+summary(Quadratic_m)
+
 ```
 
 Exciting right?
