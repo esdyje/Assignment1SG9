@@ -150,6 +150,7 @@ mixedmodel=lmer(CHI_MLU~visit+Diagnosis +(1+visit|ID),data, REML=FALSE)
 summary(mixedmodel)
 ```
 The plot does not represent the model as each child doesn't have their individual intercept. Although is does work as a description of the data.
+
 ######Reporting model above
 visit predicts MLU...
 Diagnosis does not predict MLU
@@ -162,7 +163,7 @@ Random factors: ID and Visit.
 ```{r}
 # Finding R-squared
 r.squaredGLMM(mixedmodel)
-#marginal//conditional
+#marginal//conditional The marginal R squared values are those associated with your fixed effects, the conditional ones are those of your fixed effects plus the random effects.
 
 
 # Evaluating the model
@@ -207,8 +208,10 @@ Scatterplot1 = ggplot(data, aes(visit, MOT_MLU, color=Diagnosis))+geom_point()+g
 Scatterplot1
 
 mixedmodel1=lmer(MOT_MLU~visit+Diagnosis +(1+visit|ID),data, REML=FALSE)
+mixedmodel1Null=lmer(MOT_MLU~visit +(1+visit|ID),data, REML=FALSE)
 summary(mixedmodel1)
 r.squaredGLMM(mixedmodel1)
+anova(mixedmodel1,mixedmodel1Null)
 ```
 
 There is a significant difference in how the parental MLU changes over time, (b=.12, SE=0.01, t(60)=6.5 p<.001), as well as there appears to be a significant difference in parental MLU according to diagnosis, parents of TD children talked significantly more than the parents of ASD children (b=.5, SE=.11, t(60)=4.42, p<.001)

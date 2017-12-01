@@ -161,8 +161,14 @@ dataselected=dplyr::select(data, visit, ID, Diagnosis, CHI_MLU)
 datawfake=rbind(fakedata,dataselected)
 
 #model 1 again w. new dataset w fakedata
-model1wfakedata = lmerTest::lmer(CHI_MLU~1+visit*Diagnosis+(1+visit|ID),datawfake, REML=FALSE)
+# model1wfakedata = lmerTest::lmer(CHI_MLU~1+visit*Diagnosis+(1+visit|ID),datawfake, REML=FALSE) # could do this with existing data.
+
 model2wfakedata = lmerTest::lmer(CHI_MLU~1+visit+Diagnosis+(1+visit|ID),datawfake, REML=FALSE)
+#setting interesting effectsizes for model 1 (interaction Model)
+fixef(model2wfakedata)["visit"] <- 0.05
+fixef(model2wfakedata)["DiagnosisTD"] <- -.10
+
+summary(model2wfakedata)
 
 #make power curve for the new data including the fake data
 powerCurvewfakeV = powerCurve(model2wfakedata, fixed("visit"),along="ID", nsim=100) 
@@ -180,4 +186,4 @@ powerCurvewfakeD
 
 Assume you have only the resources to collect 30 kids (15 with ASD and 15 TDs). Identify the power for each relevant effect and discuss whether it's worth to run the study and why.
 
-Since the powercurves of the different effects have shown a the number of participants needed in relation to achieve power above 80%, the question of 30 participating kids can be answered through these. The interaction effect of visit and diagnosis had no need of more data, so the powercurve run showed a minimum need of approximatly 21?? participants, so 30 participants would be sufficient for this test. Further more, the effect of visit needed a larger sample, and showed a need of approximately 20 participants - here will the 30 participants also be sufficient in achieving power-rate above 100%. For the last test of effect, diagnosis also needed a larger sample size. The powercurve of this showed that it is hard, if not impossible to achieve power above 80% - with participants up till 200.
+Since the powercurves of the different effects have shown a the number of participants needed in relation to achieve power above 80%, the question of 30 participating kids can be answered through these. The interaction effect of visit and diagnosis had no need of more data, so the powercurve run showed a minimum need of approximatly 21?? participants, so 30 participants would be sufficient for this test. ""Further more, the effect of visit needed a larger sample, and showed a need of approximately 20 participants - here will the 30 participants also be sufficient in achieving power-rate above 100%. For the last test of effect, diagnosis also needed a larger sample size. The powercurve of this showed that it is hard, if not impossible to achieve power above 80% - with participants up till 200.""""
