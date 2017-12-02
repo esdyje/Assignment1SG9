@@ -52,14 +52,14 @@ How did your models from last time perform? In this exercise you have to compare
 
 ```{r}
 #loading model
-bestmodel=lme4::lmer(CHI_MLU~visit+MOT_MLU+verbalIQ+(1+visit|ID),traindata, REML=FALSE)
+bestmodel=lmerTest::lmer(CHI_MLU~visit+MOT_MLU+verbalIQ+(1+visit|ID),traindata, REML=FALSE)
 summary(bestmodel)
 
 #performance of the model on previous data
 modelr::rmse(bestmodel, traindata)
+range(traindata$CHI_MLU)
 
 #clean test data 
-
 #renaming ID-columns
 names(dat1)[names(dat1)=="Child.ID"] <- "ID"
 names(dat2)[names(dat2)=="SUBJ"] <- "ID"
@@ -128,12 +128,13 @@ Metrics::rmse(testdata$CHI_MLU, predict(bestmodel, testdata, allow.new.levels=T)
 Metrics::rmse(traindata$CHI_MLU, predict(bestmodel, traindata, allow.new.levels = T))
 
 
-PredInt=predictInterval(merMod = bestmodel, newdata = testdata, 
+PredInt=merTools::predictInterval(merMod = bestmodel, newdata = testdata, 
                         level = 0.95, n.sims = 1000,
                         stat = "median", type="linear.prediction",
                         include.resid.var = TRUE)
 PredInt
 
+?predictInterval()
 ```
 
 root-mean-square error (RMSE) is a frequently used measure of the differences between values (sample and population values) predicted by a model or an estimator and the values actually observed.
@@ -282,13 +283,8 @@ Berniedata$Diagnosis=revalue(Berniedata$Diagnosis, c("A"="ASD", "B"="TD"))
 #to make a subset of TD data
 TDdata=traindata[traindata$Diagnosis=="TD",]
 
-#model w/ TD data
-TDmodel=lmer(CHI_MLU ~ MOT_MLU+ verbalIQ + 1+visit + (1+visit|ID), TDdata, REML = FALSE)
-summary(TDmodel)
-
 
 #Prep
-
 VBIQ=mean(TDdata$verbalIQ)
 MMLUV1=mean(TDdata$MOT_MLU[TDdata$visit==1])
 MMLUV2=mean(TDdata$MOT_MLU[TDdata$visit==2])
@@ -305,27 +301,27 @@ myfunction = function(x, y, z) {
 
 # Visit 1
 TD_visit1=myfunction(1, MMLUV1, VBIQ)
-dif_visit1 = Berniedata$CHI_MLU[Berniedata$visit==1] - TD_visit1
+dif_visit1 = Berniedata$CHI_MLU[Berniedata$visit==1] - TD_visit1 #0.64
 
 # Visit 2
 TD_visit2=myfunction(2, MMLUV2 ,VBIQ)
-dif_visit2 = Berniedata$CHI_MLU[Berniedata$visit==2] - TD_visit2
+dif_visit2 = Berniedata$CHI_MLU[Berniedata$visit==2] - TD_visit2 #0.78
 
 # Visit 3
 TD_visit3=myfunction(3, MMLUV3 ,VBIQ)
-dif_visit3 = Berniedata$CHI_MLU[Berniedata$visit==3] - TD_visit3
+dif_visit3 = Berniedata$CHI_MLU[Berniedata$visit==3] - TD_visit3 #1.23
 
 # Visit 4
 TD_visit4=myfunction(4, MMLUV4 ,VBIQ)
-dif_visit4 = Berniedata$CHI_MLU[Berniedata$visit==4] - TD_visit4
+dif_visit4 = Berniedata$CHI_MLU[Berniedata$visit==4] - TD_visit4 #0.71
 
 # Visit 5
 TD_visit5=myfunction(5, MMLUV5 ,VBIQ)
-dif_visit5 = Berniedata$CHI_MLU[Berniedata$visit==5] - TD_visit5
+dif_visit5 = Berniedata$CHI_MLU[Berniedata$visit==5] - TD_visit5 #0.36
 
 # Visit 6
 TD_visit6=myfunction(6, MMLUV6 ,VBIQ)
-dif_visit6 = Berniedata$CHI_MLU[Berniedata$visit==6] - TD_visit6
+dif_visit6 = Berniedata$CHI_MLU[Berniedata$visit==6] - TD_visit6 #0.35  
 
 # To create a dataframe 
 Visits = c(1,2,3,4,5,6)
@@ -334,10 +330,12 @@ MLU = c(TD_visit1, TD_visit2, TD_visit3, TD_visit4 ,TD_visit5, TD_visit6, Bernie
 
 Bernie_comp=data.frame(Visits, Category, MLU)
 
-ggplot(Bernie_comp, aes(x = Visits, y= MLU, colour = Category)) + geom_smooth() + geom_point()+ggtitle("Bernie's development compared to an estimation of average TD childrens performance across visits")
+ggplot(Bernie_comp, aes(x = Visits, y= MLU, colour = Category)) + geom_smooth() + geom_point()+ggtitle("Bernie's development compared to an estimation of average TD performance")
 
-#subsetting TD children at visit 6
-TDdata6=TDdata[TDdata$visit==6,]
+
+#model w/ TD data
+TDmodel=lmer(CHI_MLU ~ MOT_MLU+ verbalIQ + 1+visit + (1+visit|ID), TDdata, REML = FALSE)
+summary(TDmodel)
 #modelling TD MLU at visit 6
 Bernie_6 = Berniedata[6,] # To subset visit 6
 Bernie_pred=predict(TDmodel, Bernie_6, allow.new.levels = T) 
