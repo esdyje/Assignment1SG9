@@ -53,6 +53,7 @@ How did your models from last time perform? In this exercise you have to compare
 ```{r}
 #loading model
 bestmodel=lmerTest::lmer(CHI_MLU~visit+MOT_MLU+verbalIQ+(1+visit|ID),traindata, REML=FALSE)
+r.squaredGLMM(bestmodel)
 summary(bestmodel)
 
 #performance of the model on previous data
